@@ -1,0 +1,44 @@
+
+extern "C" {
+    void setDimensions(int dim);
+    void initGVF();
+    void addObservation(float *data, int numItems);
+    int  getNumObservations(int gestureNum);
+    void getObservation(int gestureNum, int observationNum, float *data);
+    void getObservationZeroOrigin(int gestureNum, int observationNum, float *data);
+    
+    void infer();
+    
+    int getNumberOfGestureTemplates();
+    
+    int getMostProbable();
+    float getProbability(int i);
+    float getPhase(int i);
+    float getSpeed(int i);
+    float getScale(int i);
+    float getRotation(int i);
+//    void getScale(float *s);
+//    void getRotation(float *r);
+//    
+    void startLearning();
+    void endLearning();
+    bool isLearning();
+    void startFollowing();
+    void endFollowing();
+    bool isFollowing();
+    
+    void  setTolerance(float v);
+    float getTolerance();
+    void  setScaleVariance(float v);
+    float getScaleVariance();
+    void  setSpeedVariance(float v);
+    float getSpeedVariance();
+
+    
+    void clear();
+    
+	const char* PrintHello ();
+	int PrintANumber ();
+	int AddTwoIntegers(int, int);
+	float AddTwoFloats(float, float);
+}
