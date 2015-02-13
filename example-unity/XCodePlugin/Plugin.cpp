@@ -40,7 +40,10 @@ void addObservation(float *data, int numItems)
 
 int getNumObservations(int gestureNum)
 {
-    return gvf.getGestureTemplate(gestureNum).getTemplateLength();
+    if(gestureNum > 0 && gestureNum < gvf.getNumberOfGestureTemplates())
+        return gvf.getGestureTemplate(gestureNum).getTemplateLength();
+    else
+        return -1;
 }
 void getObservation(int gestureNum, int observationNum, float *data)
 {

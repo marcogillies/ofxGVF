@@ -133,19 +133,21 @@ public class GVF : MonoBehaviour {
             	endLearning();
 
             	int numGestures = getNumberOfGestureTemplates();
-            	if(numGestures <= GestureViewers.Length)
-            	{
-			    	GestureViewers[numGestures-1].gameObject.SetActive(true);
-			    	GestureViewers[numGestures-1].SetVertexCount(getNumObservations(numGestures));
+             	if(numGestures <= GestureViewers.Length)
+             	{
+			     	GestureViewers[numGestures-1].gameObject.SetActive(true);
+			     	GestureViewers[numGestures-1].SetVertexCount(getNumObservations(numGestures-1));
 					
-			    	for (int i = 0; i < getNumObservations(numGestures-1); i++)
-			    	{
-			    		getObservationZeroOrigin(numGestures-1, i, data);
-			    		Vector3 startPos = GestureViewers[numGestures-1].gameObject.transform.position;
-			    		GestureViewers[numGestures-1].SetPosition(i, 
-							new Vector3(data[0]+startPos.x, data[1]+startPos.y, data[2]+startPos.z));
-			    	}
-            	}
+			     	for (int i = 0; i < getNumObservations(numGestures-1); i++)
+			     	{
+			     		getObservationZeroOrigin(numGestures-1, i, data);
+			     		Vector3 startPos = GestureViewers[numGestures-1].gameObject.transform.position;
+			     		GestureViewers[numGestures-1].SetPosition(i, 
+							 new Vector3(0.2f*data[0]+startPos.x, 
+							 	0.2f*data[1]+startPos.y, 
+							 	0.2f*data[2]+startPos.z));
+			     	}
+             	}
             } else {
             	state = State.learning;
             	startLearning();

@@ -11,17 +11,21 @@
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
-		<string>ssh://github.com/bcaramiaux/gvf.git</string>
+		<string>https://github.com/marcogillies/ofxGVF.git</string>
+		<key>7E804D925461714118DB355C65BC964B41D94376</key>
+		<string>https://github.com/rezaali/ofxUI.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>example-openframeworks-drawingshapes/ofxGVF-Example.xcodeproj/project.xcworkspace</string>
+	<string>example-openframeworks-drawingshapes/ofxGVF-Example.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
 		<string>../../..</string>
+		<key>7E804D925461714118DB355C65BC964B41D94376</key>
+		<string>../../../../ofxUI</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>ssh://github.com/bcaramiaux/gvf.git</string>
+	<string>https://github.com/marcogillies/ofxGVF.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
@@ -35,6 +39,14 @@
 			<string>77F887B8687689A22EC75452628A3F65A5485DC9</string>
 			<key>IDESourceControlWCCName</key>
 			<string>ofxGVF</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7E804D925461714118DB355C65BC964B41D94376</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxUI</string>
 		</dict>
 	</array>
 </dict>
