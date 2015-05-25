@@ -10,8 +10,21 @@
 
 #include <map>
 #include <vector>
-#include <iostream>
-#include <tr1/random>
+#ifndef EMSCRIPTEN
+    #include <iostream>
+#endif
+
+#if defined(_MSC_VER) || defined(EMSCRIPTEN)
+    #include <random>
+    #include <cmath>
+    #include <functional>
+    #if defined(_MSC_VER)
+    inline float round (float x) { return floor(x+0.5);};
+    #endif
+#else
+    #include <tr1/random>
+#endif
+
 #include <iostream>
 #include <math.h>
 #include <assert.h>
@@ -23,10 +36,14 @@
 #define GESTLEARNT 8
 
 #if BOOSTLIB
-#include <boost/random.hpp>
+    #include <boost/random.hpp>
 #endif
 
 using namespace std;
+
+#ifndef INFINITY
+#define INFINITY HUGE_VAL
+#endif
 
 enum ofxGVFGestureType{
     GEOMETRIC,
@@ -41,6 +58,8 @@ typedef struct{
     bool    translate;
     bool    normalization;
     bool    segmentation;
+    bool    multipoint;
+    bool    rotationFeatures;
     bool    logOn;
 } ofxGVFConfig;
 
@@ -292,9 +311,64 @@ inline float getMeanVec(vector<T>& V){
     return tSum / (float)V.size();
 }
 
+//--------------------------------------------------------------
+template <typename T>
+inline void initQuat(vector< T > & q){
+    q.resize(4);
+    q[0] = 1.0f;
+    q[1] = 0.0f;
+    q[2] = 0.0f;
+    q[3] = 0.0f;
+}
 
+//--------------------------------------------------------------
+template <typename T>
+inline void setQuatAngleAxis(vector< T > & q, float Angle, float x, float y, float z){
+    q.resize(4);
+    
+    float sA = static_cast<T>(sin(Angle/2.0));
+    float cA = static_cast<T>(cos(Angle/2.0));
+    
+    q[0] = cA;
+    q[1] = x*sA;
+    q[2] = y*sA;
+    q[3] = z*sA;
+}
 
+template <typename T>
+inline vector<T> multiplyQuat(vector<T> & q1, vector<T> & q2){
+    vector<T> multiply;
+    initQuat(multiply);
+    
+    multiply[0] = q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2] - q1[3]*q2[3];
+    multiply[1] = q1[0]*q2[1] + q1[1]*q2[0] + q1[2]*q2[3] - q1[3]*q2[2];
+    multiply[2] = q1[0]*q2[2] + q1[2]*q2[0] + q1[3]*q2[1] - q1[1]*q2[3];
+    multiply[3] = q1[0]*q2[3] + q1[3]*q2[0] + q1[1]*q2[2] - q1[2]*q2[1];
+    
+    return multiply;
+}
 
+template <typename T>
+inline vector<T> transformVec(vector<T> & q, vector<T> & v){
+    vector<T> multiply;
+    initVec(multiply, 3);
+    T w; // a temporary variable to hold the w component of the vector when made into a quaternion
+    
+    // premultiply by the quaternion
+    
+    w = - q[1]*v[0] - q[2]*v[1] - q[3]*v[2];
+    multiply[0] = q[0]*v[0] + q[2]*v[2] - q[3]*v[1];
+    multiply[1] = q[0]*v[1] + q[3]*v[0] - q[1]*v[2];
+    multiply[2] = q[0]*v[2] + q[1]*v[1] - q[2]*v[0];
+    
+    // postmultiply by its inverse
+    
+    multiply[0] = - w*q[1] + multiply[0]*q[0] - multiply[2]*q[3] + multiply[3]*q[2];
+    multiply[1] = - w*q[2] + multiply[1]*q[0] - multiply[3]*q[1] + multiply[1]*q[3];
+    multiply[2] = - w*q[3] + multiply[2]*q[0] - multiply[1]*q[2] + multiply[2]*q[1];
+    
+    return multiply;
+}
 
 //template<typename T>
 //class ofxGVFMatrix{

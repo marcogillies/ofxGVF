@@ -21,11 +21,20 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <iostream>
+#ifndef EMSCRIPTEN
+    #include <iostream>
+#endif
 #include <fstream>
 #include <sstream>
-#include <tr1/memory>
-#include <unistd.h>
+
+#if defined(_MSC_VER) || defined(EMSCRIPTEN)
+	#include <memory>
+#else
+	#include <tr1/memory>
+	#include <unistd.h>
+#endif
+
+
 
 
 using namespace std;
@@ -85,6 +94,8 @@ void ofxGVF::setup(){
     defaultConfig.translate         = true;
     defaultConfig.segmentation      = false;
     defaultConfig.normalization     = false;
+    defaultConfig.multipoint        = false;
+    defaultConfig.rotationFeatures  = false;
     
     setup(defaultConfig);
 }
@@ -117,7 +128,10 @@ void ofxGVF::setup(ofxGVFConfig _config){
 
 //--------------------------------------------------------------
 void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
-    
+   
+#ifndef EMSCRIPTEN
+    std::cout << "-----------------------------------\n starting gvf \n-----------------------------------" << std::endl;
+#endif
     
     clear(); // just in case
     
@@ -132,12 +146,27 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
 //    parameters.rotationVariance = vector<float>(rotation_dim, parameters.rotationVariance[0]);
     
 
+
 #if !BOOSTLIB
-    normdist = new std::tr1::normal_distribution<float>();
-    unifdist = new std::tr1::uniform_real<float>();
-    rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
+	#if defined(_MSC_VER)
+		normdist = new std::tr1::normal_distribution<float>();
+		unifdist = new std::tr1::uniform_real<float>();
+		rndnorm  = std::bind(*normdist, rng);
+	#else
+        #if defined(EMSCRIPTEN)
+            normdist = new std::normal_distribution<float>();
+            unifdist = new std::uniform_real_distribution<float>();
+            rndnorm  = std::bind(*normdist, rng);
+        #else
+            normdist = new std::tr1::normal_distribution<float>();
+            unifdist = new std::tr1::uniform_real<float>();
+            rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
+        #endif
+    #endif
 #endif
-    
+ 
+
+
     // absolute weights
     abs_weights = vector<float>();
     
@@ -145,6 +174,7 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     //parametersSetAsDefault = false;
     
     has_learned = false;
+
 }
 
 
@@ -170,9 +200,11 @@ ofxGVF::~ofxGVF(){
     if(unifdist != NULL)
         delete (unifdist);
 #endif
-    
+  
+#if !defined(_MSC_VER) && !defined(EMSCRIPTEN)
     if (rndnorm != NULL)
         delete (rndnorm);
+#endif
     
     clear(); // not really necessary but it's polite ;)
     
@@ -208,7 +240,7 @@ void ofxGVF::clear(){
 
 
 //--------------------------------------------------------------
-void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
+void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate, int index){
     
     int inputDimension = gestureTemplate.getNumberDimensions();
     config.inputDimensions = inputDimension;
@@ -240,9 +272,29 @@ void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
         tGestureTemplate.setMaxRange(maxRange);
     }
     
-    
-    gestureTemplates.push_back(gestureTemplate);
-    abs_weights.resize(gestureTemplates.size());
+    while (index > 0 && index > gestureTemplates.size()){
+#ifndef EMSCRIPTEN
+        std::cout << "=======================\n";
+        std::cout << "adding padding gesture\n";
+        std::cout << index << " " << gestureTemplates.size() << std::endl;
+#endif
+        gestureTemplates.push_back(gestureTemplate);
+        abs_weights.resize(gestureTemplates.size());
+    }
+    if(index < 0 || index == gestureTemplates.size()){
+#ifndef EMSCRIPTEN
+        std::cout << "==========================\n";
+        std::cout << "adding new template\n";
+#endif
+        gestureTemplates.push_back(gestureTemplate);
+        abs_weights.resize(gestureTemplates.size());
+    }else{
+#ifndef EMSCRIPTEN
+        std::cout << "==========================\n";
+        std::cout << "replacing template\n";
+#endif
+        gestureTemplates[index] = gestureTemplate;
+    }
     
     
     // (re-)learn for each new template added
@@ -320,6 +372,18 @@ void ofxGVF::initStateSpace() {
         rotation_dim = 1;
     }
     else if (input_dim == 3){
+        // scale non-uniformaly on the 3 dimensions (3 scaling coef)
+        // 3-d rotation matrix with 3 angles
+        scale_dim = 3;
+        rotation_dim = 3;
+    }
+    else if (config.rotationFeatures && input_dim == 6){
+        // scale non-uniformaly on the 3 dimensions (3 scaling coef)
+        // 3-d rotation matrix with 3 angles
+        scale_dim = 3;
+        rotation_dim = 3;
+    }
+    else if (config.multipoint && input_dim % 3 == 0){
         // scale non-uniformaly on the 3 dimensions (3 scaling coef)
         // 3-d rotation matrix with 3 angles
         scale_dim = 3;
@@ -498,8 +562,18 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 	boost::uniform_real<float> ur(0,1);
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
 #else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+    #if defined(_MSC_VER)
+		std::uniform_real<float> ur(0,1);
+		auto rnduni = std::bind(ur, rng);
+    #else
+        #if defined(EMSCRIPTEN)
+            std::uniform_real_distribution<float> ur(0,1);
+            auto rnduni = std::bind(ur, rng);
+        #else
+            std::tr1::uniform_real<float> ur(0,1);
+            std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+        #endif
+    #endif
 #endif
 	
 	unsigned int ngestures = gestureTemplates.size();// numTemplates+1;
@@ -551,8 +625,18 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 	boost::uniform_real<float> ur(0,1);
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
 #else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+	#if _MSC_VER
+		std::uniform_real<float> ur(0,1);
+		auto rnduni = std::bind(ur, rng);
+    #else
+        #if EMSCRIPTEN
+            std::uniform_real_distribution<float> ur(0,1);
+            auto rnduni = std::bind(ur, rng);
+        #else
+            std::tr1::uniform_real<float> ur(0,1);
+            std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+        #endif 
+    #endif
 #endif
 	
     //	unsigned int ngestures = numTemplates+1;
@@ -627,6 +711,28 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 //
 // The inferring values are the weights of each particle that represents a possible gesture,
 // plus a possible configuration of the features (value of speec, scale,...)
+
+ /*
+   <
+   <  [23/02/2015 16:11:03] Baptiste Caramiaux: void ofxGVF::updateLikelihood(vector<float> obs, int n)
+   <
+   <
+   <  [23/02/2015 16:11:10] Baptiste Caramiaux:  if(alignment[n] < 0.0) {
+   <  alignment[n] = fabs(alignment[n]); // re-spread at the beginning
+   <  if (config.segmentation)
+   <  classes[n] = n % getNumberOfGestureTemplates();
+   <  }
+   <  else if(alignment[n] > 1.0) {
+   <  if (config.segmentation){
+   <  alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
+   <  classes[n] = n % getNumberOfGestureTemplates();
+   <  }
+   <  else{
+   <  alignment[n] = fabs(2.0-alignment[n]); // re-spread at the end
+   <  }
+   <  }
+   <  
+   <  */
 void ofxGVF::particleFilter(vector<float> & obs){
     
     
@@ -635,8 +741,18 @@ void ofxGVF::particleFilter(vector<float> & obs){
 	boost::uniform_real<float> ur(0,1);
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
 #else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+	#if _MSC_VER
+		std::uniform_real<float> ur(0,1);
+		auto rnduni = std::bind(ur, rng);
+	#else
+        #if EMSCRIPTEN
+            std::uniform_real_distribution<float> ur(0,1);
+            auto rnduni = std::bind(ur, rng);
+        #else
+            std::tr1::uniform_real<float> ur(0,1);
+            std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+        #endif
+	#endif
 #endif
     
     
@@ -662,23 +778,49 @@ void ofxGVF::particleFilter(vector<float> & obs){
         
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
+#if defined(_MSC_VER) || defined(EMSCRIPTEN)
+        X[n][0] += rndnorm() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
+#else 
         X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
+#endif
         
         
 		// Move the other state elements according a gaussian noise
         // featVariances vector of variances
+#if defined(_MSC_VER) || defined(EMSCRIPTEN)
+        for(int l= 1; l < X[n].size(); l++)
+			X[n][l] += rndnorm() * featVariances[l];
+#else 
         for(int l= 1; l < X[n].size(); l++)
 			X[n][l] += (*rndnorm)() * featVariances[l];
+#endif
+        
+        
+        if(X[n][0] < 0.0) {
+            X[n][0] = fabs(X[n][0]); // re-spread at the beginning
+            if (config.segmentation)
+                g[n] = n % getNumberOfGestureTemplates();
+        }
+        else if(X[n][0] > 1.0) {
+            if (config.segmentation){
+                X[n][0] = fabs(1.0-X[n][0]); // re-spread at the beginning
+                g[n] = n % getNumberOfGestureTemplates();
+            }
+            else{
+                X[n][0] = fabs(2.0-X[n][0]); // re-spread at the end
+            }
+        }
+
         
 		vector<float> x_n = X[n];
         
         
         //        if (!config.segmentation){ ???
-        if(x_n[0] < 0.0 || x_n[0] > 1.0) {
+        /*if(x_n[0] < 0.0 || x_n[0] > 1.0) {
             w[n] = 0.0;
 
         }
-        else {       // ...otherwise we propagate the particle's values and update its weight
+        else*/ {       // ...otherwise we propagate the particle's values and update its weight
             
             
             int pgi = g[n];
@@ -755,11 +897,27 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 particlesPositions.push_back(temp);
                 
             }
-            else {
+            // If incoming data is 3-dimensional with rotation
+            else if (config.rotationFeatures && config.inputDimensions == 6){
                 
-                // sca1ing
-                for (int k=0;k < config.inputDimensions; k++)
-                    vref[k] *= x_n[2];
+                // Scale template sample according to the estimated scaling coefficients
+                int numberScaleCoefficients = parameters.scaleInitialSpreading.size();
+                
+                // scale and rotate the position features
+                vector<float> position(3);
+                
+                for (int k = 0; k < numberScaleCoefficients; k++)
+                    position[k] = vref[k] * x_n[2+k];
+                
+                // Rotate template sample according to the estimated angles of rotations (3d)
+                vector<vector< float> > RotMatrix = return_RotationMatrix_3d(x_n[2+numberScaleCoefficients],
+                                                                             x_n[2+numberScaleCoefficients+1],
+                                                                             x_n[2+numberScaleCoefficients+2]);
+                position = multiplyMat(RotMatrix, position);
+                
+                //write it back to the data vector
+                for (int k = 0; k < 3; k++)
+                    vref[k] = position[k];
                 
                 // put the positions into vector
                 // [used for visualization]
@@ -767,6 +925,66 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 for (int ndi=0; ndi < config.inputDimensions; ndi++)
                     temp.push_back(vref[ndi]);
                 particlesPositions.push_back(temp);
+                
+            }
+            else {
+                int numberScaleCoefficients = parameters.scaleInitialSpreading.size();
+                // multiple 3D points all with the same rotation and scale
+                if(numberScaleCoefficients == 3 && config.inputDimensions%3 == 0)
+                {
+                    // calculate the rotation matrix (the same for all positions)
+                    vector<vector< float> > RotMatrix = return_RotationMatrix_3d(x_n[2+numberScaleCoefficients],
+                                                                                 x_n[2+numberScaleCoefficients+1],
+                                                                                 x_n[2+numberScaleCoefficients+2]);
+                    
+                    // how far do we step through for each point
+                    // depends if we have just position or position and orientation
+                    // features
+                    int stride;
+                    if(config.rotationFeatures){
+                        stride = 6;
+                    } else {
+                        stride = 3;
+                    }
+                    
+                    // loop through each of the tracked points, each of which is
+                    // 3 entries in the data vector
+                    vector<float> individualposition(3);
+                    for (int pos_index = 0; pos_index < config.inputDimensions; pos_index+= stride)
+                    {
+                        // set the individual position adn scale it
+                        for (int k = 0; k < 3; k++)
+                            individualposition[k] = vref[pos_index+k] * x_n[2+k];
+//                        //rotate it
+                        individualposition = multiplyMat(RotMatrix, individualposition);
+//                        
+                        //write it back to the data vector
+                        for (int k = 0; k < 3; k++)
+                            vref[pos_index+k] = individualposition[k];
+                        
+                        // TODO need to rotate the rotation components, but that will require a
+                        // big rewrite in terms of quaternions
+                    }
+                    
+                    // put the positions into vector
+                    // [used for visualization]
+                    std::vector<float> temp;
+                    for (int ndi=0; ndi < config.inputDimensions; ndi++)
+                        temp.push_back(vref[ndi]);
+                    particlesPositions.push_back(temp);
+                }
+                else {
+                    // sca1ing
+                    for (int k=0;k < config.inputDimensions; k++)
+                        vref[k] *= x_n[2];
+                    
+                    // put the positions into vector
+                    // [used for visualization]
+                    std::vector<float> temp;
+                    for (int ndi=0; ndi < config.inputDimensions; ndi++)
+                        temp.push_back(vref[ndi]);
+                    particlesPositions.push_back(temp);
+                }
                 
             }
             
@@ -861,8 +1079,18 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     boost::uniform_real<float> ur(0,1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
 #else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+	#if _MSC_VER
+		std::uniform_real<float> ur(0,1);
+		auto rnduni = std::bind(ur, rng);
+	#else
+        #if EMSCRIPTEN
+            std::uniform_real_distribution<float> ur(0,1);
+            auto rnduni = std::bind(ur, rng);
+        #else
+            std::tr1::uniform_real<float> ur(0,1);
+            std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+        #endif
+   #endif
 #endif
     
     vector< vector<float> > oldX;

@@ -25,6 +25,7 @@
 #include <math.h>
 
 
+
 using namespace std;
 
 // Recognizes gesture and tracks the variations. A set of gesture templates
@@ -99,7 +100,7 @@ public:
     
     // TEMPLATES
     
-    void addGestureTemplate(ofxGVFGesture & gestureTemplate);
+    void addGestureTemplate(ofxGVFGesture & gestureTemplate, int i=-1);
     ofxGVFGesture & getGestureTemplate(int index);
     vector<ofxGVFGesture> & getAllGestureTemplates();
     int getNumberOfGestureTemplates();
@@ -254,10 +255,21 @@ private:
 	boost::mt19937 rng;
 	boost::normal_distribution<float> normdist;
 #else
-    tr1::mt19937 rng;
-    tr1::normal_distribution<float> *normdist;
-    tr1::uniform_real<float> *unifdist;
-	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
+	#if defined(_MSC_VER) || defined(EMSCRIPTEN)
+		mt19937 rng;
+		normal_distribution<float> *normdist;
+        #ifdef EMSCRIPTEN
+            uniform_real_distribution<float> *unifdist;
+        #else
+            uniform_real<float> *unifdist;
+        #endif
+		std::function<float()> rndnorm;//(rng, *normdist);
+	#else
+		tr1::mt19937 rng;
+		tr1::normal_distribution<float> *normdist;
+		tr1::uniform_real<float> *unifdist;
+		tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
+	#endif
 #endif
     vector<float> obsOffset;
 	// Segmentation variables

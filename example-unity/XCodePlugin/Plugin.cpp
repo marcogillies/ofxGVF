@@ -17,6 +17,25 @@ void setDimensions(int dim)
     config.inputDimensions = dim;
 }
 
+
+void setSegmentation(bool segmentation)
+{
+    config.segmentation = segmentation;
+}
+
+void setMultiPoint(bool multipoint)
+{
+    config.multipoint = multipoint;
+}
+
+
+
+void setRotationFeatures(bool rotationFeatures)
+{
+    config.rotationFeatures = rotationFeatures;
+}
+
+
 void initGVF()
 {
     // CONFIGURATION of the GVF
@@ -63,12 +82,29 @@ void getObservationZeroOrigin(int gestureNum, int observationNum, float *data)
     }
 }
 
+int  getNumObservationsCurrentGestures()
+{
+    return currentGesture.getTemplateLength();
+}
+
+void getObservationCurrentGestures(int observationNum, float *data)
+{
+    std::vector <float> vecData = currentGesture.getTemplate()[observationNum];
+    for (int i = 0; i < vecData.size(); i++)
+    {
+        data[i] = vecData[i];
+    }
+}
 
 
 void infer()
 {
     gvf.infer(currentGesture.getLastRawObservation());
+    //std::cout << "--------------------------\n";
+    //std::cout << "done inference, getting outcomes\n";
+    //std::cout << "--------------------------\n";
     outcomes = gvf.getOutcomes();
+    //std::cout << "estimations length " << outcomes.estimations.size() << std::endl;
 }
 
 int getNumberOfGestureTemplates()
@@ -89,6 +125,9 @@ float getProbability(int i)
 
 float getPhase(int i)
 {
+    std::cout << "---------------------------------\n";
+    std::cout << "get phase " << i << " " << outcomes.estimations.size() << std::endl;
+    std::cout << "---------------------------------\n";
     return outcomes.estimations[i].phase;
 }
 
@@ -132,7 +171,17 @@ void startLearning()
 
 void endLearning()
 {
+    std::cout << "=================================\n";
+    std::cout << "ending learning\n";
     gvf.addGestureTemplate(currentGesture);
+    currentGesture.clear();
+}
+
+void setGestureToCurrent(int index)
+{
+    std::cout << "=================================\n";
+    std::cout << "setting gesture\n";
+    gvf.addGestureTemplate(currentGesture, index);
     currentGesture.clear();
 }
 
@@ -189,27 +238,22 @@ float getSpeedVariance()
 }
 
 
+void saveTemplates(const char * filename)
+{
+    gvf.saveTemplates(filename);
+}
+void loadTemplates(const char * filename)
+{
+    gvf.loadTemplates(filename);
+}
+
 void clear()
 {
     gvf.clear();
 }
 
 
-const char* PrintHello(){
-	return "Hello";
-}
 
-int PrintANumber(){
-	return 8;
-}
-
-int AddTwoIntegers(int a, int b) {
-	return a + b;
-}
-
-float AddTwoFloats(float a, float b) {
-	return a + b;
-}
 
 
 

@@ -1,11 +1,19 @@
 
 extern "C" {
     void setDimensions(int dim);
+    void setSegmentation(bool segmentation);
+    void setMultiPoint(bool multipoint);
+    void setRotationFeatures(bool rotationFeatures);
+    
     void initGVF();
+    
     void addObservation(float *data, int numItems);
     int  getNumObservations(int gestureNum);
     void getObservation(int gestureNum, int observationNum, float *data);
     void getObservationZeroOrigin(int gestureNum, int observationNum, float *data);
+    
+    int  getNumObservationsCurrentGestures();
+    void  getObservationCurrentGestures(int observationNum, float *data);
     
     void infer();
     
@@ -22,6 +30,7 @@ extern "C" {
 //    
     void startLearning();
     void endLearning();
+    void setGestureToCurrent(int index);
     bool isLearning();
     void startFollowing();
     void endFollowing();
@@ -33,12 +42,9 @@ extern "C" {
     float getScaleVariance();
     void  setSpeedVariance(float v);
     float getSpeedVariance();
+    
+    void saveTemplates(const char * filename);
+    void loadTemplates(const char * filename);
 
-    
-    void clear();
-    
-	const char* PrintHello ();
-	int PrintANumber ();
-	int AddTwoIntegers(int, int);
-	float AddTwoFloats(float, float);
+    void clear();    
 }

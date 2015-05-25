@@ -1,6 +1,6 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TexturePlugin", "TexturePlugin.vcproj", "{05036C7A-18C6-4A79-BC31-3ABD5C3B0593}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ASimplePlugin", "TexturePlugin.vcxproj", "{05036C7A-18C6-4A79-BC31-3ABD5C3B0593}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
