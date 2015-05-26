@@ -34,6 +34,7 @@ var GVF = function (){
 			this.getObservation_internal(gestureNum, 0);
 			obs.x -= this.getObservationVal_internal(0);
 			obs.y -= this.getObservationVal_internal(1);
+			return obs;
 		},
 
 		getObservationCurrentGesture : function (observationNum){
@@ -53,6 +54,7 @@ var GVF = function (){
 			this.getObservationCurrentGestures_internal(gestureNum, 0);
 			obs.x -= this.getObservationVal_internal(0);
 			obs.y -= this.getObservationVal_internal(1);
+			return obs;
 		},
 
 		infer :  Module.cwrap('infer', null, []),

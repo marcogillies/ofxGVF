@@ -57,7 +57,6 @@ void initGVF()
 
 void addObservation2D(float x, float y)
 {
-
     std::vector<float> vecData;
     vecData.push_back(x);
     vecData.push_back(y);
@@ -66,7 +65,7 @@ void addObservation2D(float x, float y)
 
 int getNumObservations(int gestureNum)
 {
-    if(gestureNum > 0 && gestureNum < gvf.getNumberOfGestureTemplates())
+    if(gestureNum >= 0 && gestureNum < gvf.getNumberOfGestureTemplates())
         return gvf.getGestureTemplate(gestureNum).getTemplateLength();
     else
         return -1;
@@ -84,7 +83,7 @@ void getObservation(int gestureNum, int observationNum)
 
 float getObservationVal(int i)
 {
-	if(i > 0 && i < observation.size()){
+	if(i >= 0 && i < observation.size()){
 		return observation[i];
 	} else {
 		return 0.0f;
