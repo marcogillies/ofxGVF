@@ -79,10 +79,14 @@ var GVF = function (){
 
 		setTolerance       :  Module.cwrap('setTolerance', null, ['number']),
 		getTolerance       :  Module.cwrap('getTolerance', 'number', []),
+		setPhaseVariance   :  Module.cwrap('setPhaseVariance', null, ['number']),
+		getPhaseVariance   :  Module.cwrap('getPhaseVariance', 'number', []),
 		setScaleVariance   :  Module.cwrap('setScaleVariance', null, ['number']),
 		getScaleVariance   :  Module.cwrap('getScaleVariance', 'number', []),
 		setSpeedVariance   :  Module.cwrap('setSpeedVariance', null, ['number']),
 		getSpeedVariance   :  Module.cwrap('getSpeedVariance', 'number', []),
+		setRotationVariance   :  Module.cwrap('setRotationVariance', null, ['number']),
+		getRotationVariance   :  Module.cwrap('getRotationVariance', 'number', []),
 
 		saveTemplates   :  Module.cwrap('saveTemplates', null, ['string']),
 		loadTemplates   :  Module.cwrap('loadTemplates', null, ['string']),

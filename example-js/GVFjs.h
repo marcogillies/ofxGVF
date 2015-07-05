@@ -50,10 +50,14 @@ extern "C" {
     
     void  EXPORT_DECORATION setTolerance(float v);
     float EXPORT_DECORATION getTolerance();
+    void  EXPORT_DECORATION setPhaseVariance(float v);
+    float EXPORT_DECORATION getPhaseVariance();
     void  EXPORT_DECORATION setScaleVariance(float v);
     float EXPORT_DECORATION getScaleVariance();
     void  EXPORT_DECORATION setSpeedVariance(float v);
     float EXPORT_DECORATION getSpeedVariance();
+    void  EXPORT_DECORATION setRotationVariance(float v);
+    float EXPORT_DECORATION getRotationVariance();
     
     void EXPORT_DECORATION saveTemplates(const char * filename);
     void EXPORT_DECORATION loadTemplates(const char * filename);

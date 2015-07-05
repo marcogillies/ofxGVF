@@ -1057,7 +1057,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
 	if(neff < parameters.resamplingThreshold)
     {
         //    post("resampling");
-        //cout << "Resampling" << endl;
+        cout << "Resampling" << endl;
         resampleAccordingToWeights(obs);
         initweights();
     }

@@ -235,6 +235,7 @@ void startFollowing()
 
 void endFollowing()
 {
+    //gvf.setState(ofxGVF::STATE_CLEAR);
     currentGesture.clear();
     gvf.spreadParticles();
 }
@@ -254,6 +255,14 @@ float getTolerance()
 {
     return gvf.getTolerance();
 }
+void  setPhaseVariance(float v)
+{
+    gvf.setPhaseVariance(v);
+}
+float getPhaseVariance()
+{
+    return gvf.getPhaseVariance();
+}
 void  setScaleVariance(float v)
 {
     gvf.setScaleVariance(v);
@@ -269,6 +278,14 @@ void  setSpeedVariance(float v)
 float getSpeedVariance()
 {
     return gvf.getSpeedVariance();
+}
+void  setRotationVariance(float v)
+{
+    gvf.setRotationVariance(v);
+}
+float getRotationVariance()
+{
+    return gvf.getRotationVariance()[0];
 }
 
 
