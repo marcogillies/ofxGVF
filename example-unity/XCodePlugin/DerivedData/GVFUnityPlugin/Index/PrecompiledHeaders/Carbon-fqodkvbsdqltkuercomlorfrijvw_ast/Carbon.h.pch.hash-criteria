@@ -1,0 +1,27 @@
+-x
+c++
+-arch
+i386
+-fretain-comments-from-system-headers
+-stdlib=libstdc++
+-gmodules
+-fpascal-strings
+-O0
+-isysroot
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
+-fasm-blocks
+-mmacosx-version-min=10.12
+-g
+-fvisibility-inlines-hidden
+-iquote
+-iquote
+-I/Users/marco/Documents/code/of_v0.8.4_osx_release/addons/ofxGVF/example-unity/XCodePlugin/DerivedData/GVFUnityPlugin/Build/Products/Debug/include
+-F/Users/marco/Documents/code/of_v0.8.4_osx_release/addons/ofxGVF/example-unity/XCodePlugin/DerivedData/GVFUnityPlugin/Build/Products/Debug
+-ferror-limit=10
+-working-directory=/Users/marco/Documents/code/of_v0.8.4_osx_release/addons/ofxGVF/example-unity/XCodePlugin
+-Xclang
+-detailed-preprocessing-record
+i386-apple-darwin15.6.0
+"4.2.1 Compatible Apple LLVM 8.0.0 (clang-800.0.38)"
+SDK_PRODUCT_BUILD_VERSION=16A300
+16A300

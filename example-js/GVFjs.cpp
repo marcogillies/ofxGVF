@@ -230,7 +230,7 @@ void startFollowing()
     gvf.setState(ofxGVF::STATE_FOLLOWING);
     gvf.spreadParticles();
     currentGesture.clear();
-    currentGesture.setAutoAdjustRanges(false);
+    currentGesture.setAutoAdjustRanges(true);
 }
 
 void endFollowing()

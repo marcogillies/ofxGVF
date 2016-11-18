@@ -449,7 +449,7 @@ void ofxGVF::initParticleFilter() {
             /config.inputDimensions;
     }
     obsMeanRange /= gestureTemplates.size();
-    parameters.tolerance = obsMeanRange / 8.0f;  // dividing by an heuristic factor [to be learned?]
+    //parameters.tolerance = obsMeanRange / 8.0f;  // dividing by an heuristic factor [to be learned?]
     
     //}
     // ---------------------------
@@ -578,7 +578,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 	
 	unsigned int ngestures = gestureTemplates.size();// numTemplates+1;
     
-    float spreadRangePhase = 0.1;
+    float spreadRangePhase = 0.01;
     float spreadRange = 0.1;
     int scalingCoefficients  = _parameters.scaleInitialSpreading.size();
     int numberRotationAngles = _parameters.rotationInitialSpreading.size();
